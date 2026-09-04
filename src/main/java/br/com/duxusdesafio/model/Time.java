@@ -11,7 +11,7 @@ public class Time {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private Long id; // mudei de long para Long
 
     /**
      * Nome do Clube (associação esportiva)

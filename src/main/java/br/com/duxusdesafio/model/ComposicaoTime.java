@@ -11,7 +11,7 @@ public class ComposicaoTime {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private Long id; // mudei de long para Long
 	
 	@ManyToOne
 	private Time time;

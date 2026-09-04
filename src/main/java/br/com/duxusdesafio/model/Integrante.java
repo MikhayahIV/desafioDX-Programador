@@ -11,7 +11,7 @@ public class Integrante {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long id;
+	private Long id; // mudei de long para Long
 
 	@NotNull
 	@Column
