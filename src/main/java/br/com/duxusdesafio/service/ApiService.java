@@ -7,13 +7,16 @@ import br.com.duxusdesafio.repository.CompTimeRepository;
 import br.com.duxusdesafio.repository.IntegranteRepository;
 import br.com.duxusdesafio.repository.TimeRepository;
 import javassist.NotFoundException;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Service que possuirá as regras de negócio para o processamento dos dados
@@ -78,7 +81,36 @@ public class ApiService {
      */
     public List<String> integrantesDoTimeMaisRecorrente(LocalDate dataInicial, LocalDate dataFinal, List<Time> todosOsTimes){
         // TODO Implementar método seguindo as instruções!
-        return null;
+
+        Map<String, Integer> contagemClubes = new HashMap<>();
+        for(Time time: todosOsTimes){
+            if(!time.getData().isBefore(dataInicial)&&!time.getData().isAfter(dataFinal)) {
+                String clube = time.getNomeDoClube();
+                contagemClubes.merge(clube, 1, Integer::sum);
+            }
+        }
+
+        String clubeMaisRecorrente = contagemClubes.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+
+        if(clubeMaisRecorrente == null){
+            return Collections.emptyList();
+        }
+
+        for(Time time:todosOsTimes){
+            if(time.getNomeDoClube().equals(clubeMaisRecorrente)
+                    && !time.getData().isBefore(dataInicial)
+                    && !time.getData().isAfter(dataFinal)){
+                return time.getComposicaoTime()
+                        .stream()
+                        .map(composicaoTime -> composicaoTime.getIntegrante().getNome())
+                        .collect(Collectors.toList());
+            }
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -86,7 +118,21 @@ public class ApiService {
      */
     public String funcaoMaisRecorrente(LocalDate dataInicial, LocalDate dataFinal, List<Time> todosOsTimes){
         // TODO Implementar método seguindo as instruções!
-        return null;
+        Map<String, Integer> contagemFuncoes = new HashMap<>();
+        for(Time time: todosOsTimes){
+            if(!time.getData().isBefore(dataInicial)&&!time.getData().isAfter(dataFinal)) {
+
+                for(ComposicaoTime composicaoTime: time.getComposicaoTime()){
+                    String funcao = composicaoTime.getIntegrante().getFuncao();
+                    contagemFuncoes.merge(funcao,1,Integer::sum);
+                }
+            }
+        }
+        return contagemFuncoes.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
     }
 
     /**
@@ -116,7 +162,10 @@ public class ApiService {
      */
     public Map<String, Long> contagemDeClubesNoPeriodo(LocalDate dataInicial, LocalDate dataFinal, List<Time> todosOsTimes){
         // TODO Implementar método seguindo as instruções!
-        return null;
+        return todosOsTimes.stream()
+                .filter(time -> !time.getData().isBefore(dataInicial)
+                        && !time.getData().isAfter(dataFinal))
+                .collect(Collectors.groupingBy(Time::getNomeDoClube,Collectors.counting()));
     }
 
     /**
@@ -125,7 +174,29 @@ public class ApiService {
      */
     public Map<String, Long> contagemPorFuncao(LocalDate dataInicial, LocalDate dataFinal, List<Time> todosOsTimes){
         // TODO Implementar método seguindo as instruções!
-        return null;
+        return todosOsTimes.stream()
+                .filter(time -> !time.getData().isBefore(dataInicial)
+                        && !time.getData().isAfter(dataFinal))
+                .flatMap(time -> time.getComposicaoTime().stream()).map(composicaoTime -> composicaoTime.getIntegrante().getFuncao())
+                        .collect(Collectors.groupingBy(funcao ->funcao,Collectors.counting()
+                        ));
+    }
+
+    public Integrante cadastraIntegrante(Integrante integrante){
+        return integranteRepository.save(integrante);
+    }
+
+    public Time cadastrarTime(Time time) throws NotFoundException{
+        if(time.getComposicaoTime() != null){
+            for(ComposicaoTime composicao: time.getComposicaoTime()){
+                Long integranteId = composicao.getIntegrante().getId();
+                Integrante integrante = integranteRepository.findById(integranteId).orElseThrow(() -> new NotFoundException("Integrante não encontrado: "+integranteId));
+
+                composicao.setIntegrante(integrante);
+                composicao.setTime(time);
+            }
+        }
+        return timeRepository.save(time);
     }
 
 }
