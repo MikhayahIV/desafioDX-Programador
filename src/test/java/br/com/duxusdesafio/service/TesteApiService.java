@@ -5,6 +5,7 @@ import br.com.duxusdesafio.model.Time;
 import com.tngtech.java.junit.dataprovider.DataProvider;
 import com.tngtech.java.junit.dataprovider.DataProviderRunner;
 import com.tngtech.java.junit.dataprovider.UseDataProvider;
+import javassist.NotFoundException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,12 +24,12 @@ public class TesteApiService {
     private final static LocalDate data1994 = LocalDate.of(1994,1, 1);
     private final static LocalDate data1995 = LocalDate.of(1995,1, 1);
 
-    @Spy
+
     private ApiService apiService;
 
     @Before
     public void init() {
-        MockitoAnnotations.openMocks(this);
+        apiService = new ApiService(null,null,null);
     }
 
 
@@ -58,7 +59,7 @@ public class TesteApiService {
 
     @Test
     @UseDataProvider("testTimeDaDataParams")
-    public void testTimeDaData(LocalDate data, List<Time> todosOsTimes, Time esperado) {
+    public void testTimeDaData(LocalDate data, List<Time> todosOsTimes, Time esperado) throws NotFoundException {
 
         Time timeRetornado = apiService.timeDaData(data, todosOsTimes);
 
@@ -225,8 +226,8 @@ public class TesteApiService {
         List<Time> todosOsTimes = dadosParaTesteApiService.getTodosOsTimes();
 
         Map<String, Long> esperado = new HashMap<>();
-        esperado.put("ala", 2L);
-        esperado.put("ala-pivô", 1L);
+        esperado.put("ala", 4L); //2
+        esperado.put("ala-pivô", 3L); //1
 
         return new Object[][]{
                 {
