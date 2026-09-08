@@ -12,10 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,16 +38,19 @@ public class ApiService {
         this.timeRepository = timeRepository;
     }
 
+    private boolean estaNoPeriodo(Time time, LocalDate dataInicial, LocalDate dataFinal){
+        return (dataInicial == null || !time.getData().isBefore(dataInicial)) && (dataFinal == null || !time.getData().isAfter(dataFinal));
+    }
+
     /**
      * Vai retornar um Time, com a composição do time daquela data
      */
     public Time timeDaData(LocalDate data, List<Time> todosOsTimes) throws NotFoundException {
         // TODO Implementar método seguindo as instruções!
-        /*return timeRepository.findByData(data)
-                .orElseThrow(() ->  new NotFoundException("Nenhum time com a data informada")); */
         return todosOsTimes.stream()
                 .filter(time -> time.getData().equals(data))
-                .findFirst().orElseThrow(() ->  new NotFoundException("Nenhum time com a data informada"));
+                .findFirst()
+                .orElseThrow(() ->  new NotFoundException("Nenhum time com a data informada"));
     }
 
     /**
@@ -60,19 +61,23 @@ public class ApiService {
         // TODO Implementar método seguindo as instruções!
         Map<Integrante, Integer> contagem = new HashMap<>();
         for (Time time : todosOsTimes){
-            if (!time.getData().isBefore(dataInicial)&& !time.getData().isAfter(dataFinal)){
-                for(ComposicaoTime composicaoTime : time.getComposicaoTime()){
-                    Integrante integrante = composicaoTime.getIntegrante();
-                    contagem.merge(integrante,1,Integer::sum);
+            if (!estaNoPeriodo(time,dataInicial,dataFinal)){
+                continue;
                 }
+            Set<Integrante> integranteDoTime = time.getComposicaoTime()
+                    .stream()
+                    .map(ComposicaoTime::getIntegrante)
+                    .collect(Collectors.toSet());
+
+            for(Integrante integrante : integranteDoTime){
+                contagem.merge(integrante,1,Integer::sum);
             }
         }
         return contagem.entrySet()
                 .stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
-                .orElse(null)
-                ;
+                .orElse(null);
     }
 
     /**
@@ -84,33 +89,48 @@ public class ApiService {
 
         Map<String, Integer> contagemClubes = new HashMap<>();
         for(Time time: todosOsTimes){
-            if(!time.getData().isBefore(dataInicial)&&!time.getData().isAfter(dataFinal)) {
-                String clube = time.getNomeDoClube();
-                contagemClubes.merge(clube, 1, Integer::sum);
+            if(!estaNoPeriodo(time,dataInicial,dataFinal)) {
+                continue;
             }
+            String chaveTime = gerarChaveDoTime(time);
+
+            contagemClubes.merge(chaveTime, 1, Integer::sum);
         }
 
-        String clubeMaisRecorrente = contagemClubes.entrySet()
+        String chaveTimeMaisRecorrente = contagemClubes.entrySet()
                 .stream()
                 .max(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse(null);
 
-        if(clubeMaisRecorrente == null){
+        if (chaveTimeMaisRecorrente == null) {
             return Collections.emptyList();
         }
 
-        for(Time time:todosOsTimes){
-            if(time.getNomeDoClube().equals(clubeMaisRecorrente)
-                    && !time.getData().isBefore(dataInicial)
-                    && !time.getData().isAfter(dataFinal)){
+        for (Time time : todosOsTimes) {
+
+            if (!estaNoPeriodo(time, dataInicial, dataFinal)) {
+                continue;
+            }
+
+            if (gerarChaveDoTime(time).equals(chaveTimeMaisRecorrente)) {
                 return time.getComposicaoTime()
                         .stream()
-                        .map(composicaoTime -> composicaoTime.getIntegrante().getNome())
+                        .map(composicaoTime ->
+                                composicaoTime.getIntegrante().getNome())
                         .collect(Collectors.toList());
             }
         }
         return Collections.emptyList();
+    }
+
+    private String gerarChaveDoTime(Time time){
+        String integrantes = time.getComposicaoTime()
+                .stream()
+                .map(composicaoTime -> String.valueOf(composicaoTime.getIntegrante().getId()))
+                .sorted().collect(Collectors.joining(","));
+
+        return time.getNomeDoClube() + "|" + integrantes;
     }
 
     /**
@@ -120,12 +140,12 @@ public class ApiService {
         // TODO Implementar método seguindo as instruções!
         Map<String, Integer> contagemFuncoes = new HashMap<>();
         for(Time time: todosOsTimes){
-            if(!time.getData().isBefore(dataInicial)&&!time.getData().isAfter(dataFinal)) {
-
-                for(ComposicaoTime composicaoTime: time.getComposicaoTime()){
-                    String funcao = composicaoTime.getIntegrante().getFuncao();
-                    contagemFuncoes.merge(funcao,1,Integer::sum);
+            if(!estaNoPeriodo(time,dataInicial,dataFinal)){
+                continue;
                 }
+            for(ComposicaoTime composicaoTime: time.getComposicaoTime()){
+                String funcao = composicaoTime.getIntegrante().getFuncao();
+                contagemFuncoes.merge(funcao,1,Integer::sum);
             }
         }
         return contagemFuncoes.entrySet()
@@ -143,11 +163,11 @@ public class ApiService {
 
         Map<String, Integer> contagemClubes = new HashMap<>();
         for(Time time: todosOsTimes){
-            if(!time.getData().isBefore(dataInicial)&&!time.getData().isAfter(dataFinal)){
-                String clube = time.getNomeDoClube();
-
-                contagemClubes.merge(clube,1,Integer::sum);
+            if(!estaNoPeriodo(time,dataInicial,dataFinal)){
+                continue;
             }
+            String clube = time.getNomeDoClube();
+            contagemClubes.merge(clube,1,Integer::sum);
         }
         return contagemClubes.entrySet()
                 .stream()
@@ -163,8 +183,7 @@ public class ApiService {
     public Map<String, Long> contagemDeClubesNoPeriodo(LocalDate dataInicial, LocalDate dataFinal, List<Time> todosOsTimes){
         // TODO Implementar método seguindo as instruções!
         return todosOsTimes.stream()
-                .filter(time -> !time.getData().isBefore(dataInicial)
-                        && !time.getData().isAfter(dataFinal))
+                .filter(time -> estaNoPeriodo(time,dataInicial,dataFinal))
                 .collect(Collectors.groupingBy(Time::getNomeDoClube,Collectors.counting()));
     }
 
@@ -175,8 +194,7 @@ public class ApiService {
     public Map<String, Long> contagemPorFuncao(LocalDate dataInicial, LocalDate dataFinal, List<Time> todosOsTimes){
         // TODO Implementar método seguindo as instruções!
         return todosOsTimes.stream()
-                .filter(time -> !time.getData().isBefore(dataInicial)
-                        && !time.getData().isAfter(dataFinal))
+                .filter(time -> estaNoPeriodo(time,dataInicial,dataFinal))
                 .flatMap(time -> time.getComposicaoTime().stream()).map(composicaoTime -> composicaoTime.getIntegrante().getFuncao())
                         .collect(Collectors.groupingBy(funcao ->funcao,Collectors.counting()
                         ));

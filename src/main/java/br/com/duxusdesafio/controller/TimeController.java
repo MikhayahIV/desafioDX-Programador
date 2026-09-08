@@ -4,6 +4,7 @@ import br.com.duxusdesafio.model.Time;
 import br.com.duxusdesafio.repository.TimeRepository;
 import br.com.duxusdesafio.service.ApiService;
 import javassist.NotFoundException;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,14 +30,14 @@ public class TimeController {
     }
 
     @GetMapping
-    public ResponseEntity<Time> buscarTimePorData(@RequestParam LocalDate data) throws NotFoundException{
+    public ResponseEntity<Time> buscarTimePorData(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) throws NotFoundException{
         List<Time> todosOsTimes = repository.findAll();
         Time time = service.timeDaData(data, todosOsTimes);
         return ResponseEntity.ok(time);
     }
 
     @GetMapping("/mais-recorrente/integrantes")
-    public List<String> integrantesDoTimeMaisRecorrente(@RequestParam LocalDate dataInicial, @RequestParam LocalDate dataFinal){
+    public List<String> integrantesDoTimeMaisRecorrente(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal){
         List<Time> todosOstimes = repository.findAll();
         return service.integrantesDoTimeMaisRecorrente(dataInicial,dataFinal,todosOstimes);
     }

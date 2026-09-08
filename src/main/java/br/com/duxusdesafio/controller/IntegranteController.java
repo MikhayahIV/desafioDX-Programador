@@ -4,9 +4,11 @@ import br.com.duxusdesafio.model.Integrante;
 import br.com.duxusdesafio.model.Time;
 import br.com.duxusdesafio.repository.TimeRepository;
 import br.com.duxusdesafio.service.ApiService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -28,19 +30,19 @@ public class IntegranteController {
     }
 
     @GetMapping("/mais-usado")
-    public Integrante integranteMaisUsado(@RequestParam LocalDate dataInicial, @RequestParam LocalDate dataFinal){
+    public Integrante integranteMaisUsado(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal){
         List<Time> todosOsTimes = repository.findAll();
         return service.integranteMaisUsado(dataInicial,dataFinal,todosOsTimes);
     }
 
     @GetMapping("/funcao/mais-recorrente")
-    public String funcaoMaisRecorrente(@RequestParam LocalDate dataInicial, @RequestParam LocalDate dataFinal){
+    public Map<String, String> funcaoMaisRecorrente(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal){
         List<Time> todosOsTimes = repository.findAll();
-        return service.funcaoMaisRecorrente(dataInicial,dataFinal,todosOsTimes);
+        return Collections.singletonMap("Funcao",service.funcaoMaisRecorrente(dataInicial,dataFinal,todosOsTimes));
     }
 
     @GetMapping("/funcao/contagem")
-    public Map<String,Long> contagemPorFuncao(@RequestParam LocalDate dataInicial, @RequestParam LocalDate dataFinal){
+    public Map<String,Long> contagemPorFuncao(@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal){
         List<Time> todosOsTimes = repository.findAll();
         return service.contagemPorFuncao(dataInicial,dataFinal,todosOsTimes);
     }

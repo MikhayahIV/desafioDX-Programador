@@ -1,6 +1,8 @@
 package br.com.duxusdesafio.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -14,6 +16,7 @@ public class ComposicaoTime {
 	private Long id; // mudei de long para Long
 	
 	@ManyToOne
+	@JsonIgnore
 	private Time time;
 
 	@ManyToOne

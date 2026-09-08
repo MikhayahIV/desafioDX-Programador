@@ -1,5 +1,7 @@
 package br.com.duxusdesafio.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -22,6 +24,7 @@ public class Integrante {
 	private String funcao;
 	
 	@OneToMany(mappedBy = "integrante")
+	@JsonIgnore
 	private List<ComposicaoTime> composicaoTime;
 
 
