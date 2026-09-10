@@ -26,7 +26,6 @@ seguintes respondem normalmente.
 > Em outras palavras: pode ser necessário dar uma "partida" no backend na
 > primeira requisição. 😄
 > Tem alguns campos na tela que indicam se a API já "ligou"
-> A mesma possui indicadores de cores
 > um no canto superior direito da tela
 > e outro no canto inferior esquerdo da tela
 
