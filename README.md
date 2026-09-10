@@ -14,6 +14,21 @@ O projeto está disponível online para demonstração:
 
 **Frontend / Dashboard:**
 [https://team-analytics-dash.vercel.app/times](https://team-analytics-dash.vercel.app/)
+### Observação sobre a aplicação online
+
+O backend está hospedado na Render e pode entrar em estado de inatividade
+após um período sem requisições.
+
+Dessa forma, a primeira requisição pode levar alguns segundos devido à
+inicialização do serviço. Depois que o backend estiver ativo, as requisições
+seguintes respondem normalmente.
+
+> Em outras palavras: pode ser necessário dar uma "partida" no backend na
+> primeira requisição. 😄
+> Tem alguns campos na tela que indicam se a API já "ligou"
+> que possui indicativos de cores
+> um no canto superior direito da tela
+> e outro no canto inferior esquerdo da tela
 
 A aplicação possui uma arquitetura separada entre frontend, backend e
 banco de dados.
