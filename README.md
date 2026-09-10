@@ -13,7 +13,7 @@ clube mais recorrente, função mais recorrente e contagens por período.
 O projeto está disponível online para demonstração:
 
 **Frontend / Dashboard:**
-https://team-analytics-dash.vercel.app/times
+[https://team-analytics-dash.vercel.app/times](https://team-analytics-dash.vercel.app/)
 
 A aplicação possui uma arquitetura separada entre frontend, backend e
 banco de dados.
