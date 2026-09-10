@@ -1,172 +1,397 @@
+# Desafio Duxus — Sistema de Escalação de Times
 
-# Desafio de Desenvolvimento
+API REST para cadastro de integrantes e times, além do processamento de
+estatísticas relacionadas às escalações.
 
-O objetivo deste desafio é obter uma ideia das habilidades que o candidato possui, da organização de tempo e também do código.
+O projeto permite consultar informações como integrante mais utilizado,
+clube mais recorrente, função mais recorrente e contagens por período.
 
-## Considerações Importantes – Por favor, leia com atenção:
+---
 
-- O desafio já tem códigos pré prontos para você completar as funcionalidades. Não é preciso reinventar a roda! Use o que existe!
+## Aplicação online
 
-- Use seu tempo de forma inteligente: Uma solução simples primeiro e depois avance.
+O projeto está disponível online para demonstração:
 
-- Comentários sempre são bem-vindos em métodos ou estruturas mais complexas.
+**Frontend / Dashboard:**
+https://team-analytics-dash.vercel.app/times
 
-- Parece não intuitivo, mas deixe as telas por último, pense na estrutura dos dados e nos métodos de gravação e exportação primeiro.
+A aplicação possui uma arquitetura separada entre frontend, backend e
+banco de dados.
 
-- Utilize os testes unitários já existentes e crie novos também, isso é importante. Não existe necessidade de 100% de cobertura, mas use-os para experimentar e validar sua solução – **é muito importante que os testes já existentes estejam passando após a sua implementação!**
+---
 
-- Faça commits frequentes, assim podemos ver a evolução da sua solução.
+## Arquitetura e Deploy
 
-- Sobre banco de dados, você pode usar qualquer um que esteja acostumado, inclusive em memória, se preferir. Aqui utilizamos, comumente: PostgreSQL, Microsoft SQL Server, Oracle DB, MySQL e, especialmente para testes, HSQLDB. 
+A aplicação foi publicada utilizando serviços separados para cada camada:
 
-- Entregue tudo o que conseguir fazer, indiferente de estar completo ou não.
+```text
+                    ┌─────────────────────┐
+                    │      Frontend       │
+                    │       Vercel        │
+                    └──────────┬──────────┘
+                               │
+                               │ HTTP / REST
+                               ▼
+                    ┌─────────────────────┐
+                    │       Backend       │
+                    │       Render        │
+                    │   Spring Boot API   │
+                    └──────────┬──────────┘
+                               │
+                               │ PostgreSQL
+                               ▼
+                    ┌─────────────────────┐
+                    │      Database       │
+                    │       Render        │
+                    │     PostgreSQL      │
+                    └─────────────────────┘
+```
 
-- Durante o período de teste, fique à vontade para enviar dúvidas ao recrutador.
+### Frontend
 
-- Ao final, deixamos alguns links que podem ser úteis para consulta, mas você pode consultar qualquer material, à vontade.
+O frontend foi desenvolvido com auxílio de inteligência artificial através
+do Lovable, sendo posteriormente integrado à API REST desenvolvida no
+backend.
 
-- Nos envie, ao final, uma descrição com detalhes de como podemos testar a sua implementação.
+O frontend foi publicado na Vercel e configurado para consumir a API
+hospedada no Render por meio de variável de ambiente.
 
-## O que você deve implementar:
+### Backend
 
-Imagine que você quer fazer um sistema de escalação de times. Toda semana você vai montar um time vencedor. 
+O backend foi desenvolvido em Java com Spring Boot e disponibilizado
+na Render como um Web Service independente.
 
-Não importa se é Esporte tradicional ou eSports.
+As configurações de conexão com o banco de dados são realizadas através de
+variáveis de ambiente, evitando que informações de infraestrutura sejam
+mantidas diretamente no código-fonte.
 
-Exemplos de Esporte tradicional : Futebol, Basquete.
+### Banco de dados
 
-Exemplos de eSports : Counter Strike, Valorant, Free Fire, League of Legends, APEX.
+O banco utilizado é PostgreSQL, também hospedado na Render como um
+serviço separado do backend.
 
-Sua tarefa é construir a melhor solução no tempo combinado, considerando os requisitos que estarão descritos abaixo.
+A aplicação backend utiliza as variáveis de ambiente fornecidas pelo
+ambiente de deploy para estabelecer a conexão com o banco.
 
-Você pode usar a criatividade pois não existe uma solução definitiva para o desafio.
+### Variáveis de ambiente
 
-Abaixo, mais detalhes:
+As variáveis de ambiente foram configuradas separadamente nos ambientes de
+desenvolvimento e produção.
 
-## Estrutura dos Dados
+No frontend, a variável de ambiente aponta para a URL da API publicada.
 
-### Tabela de "Integrante" :
+No backend, as variáveis são utilizadas para configurar a conexão com o
+PostgreSQL.
 
-- Id
-- Nome
-- Função
+### Configuração local
 
-### Tabela de Time:
+Para executar o backend localmente, utilize Java 11, Maven e PostgreSQL.
 
-- Id
-- Nome do Clube
-- Data
+Configure as variáveis de ambiente utilizadas pela aplicação:
 
-### Tabela de ComposicaoTime:
+```
+DB_NAME=NOME_DATABASE
+DB_PASSWORD=SUA_SENHA_AQUI
+DB_USER=SEU_USUARIO
+DB_PORT=5432
+DB_DRIVER=org.postgresql.Driver
+DB_URL=URL_DO_DATABASE
+```
 
-- Id
-- Id_Time  (foreign key tabela Time)
-- Id_Integrante  (foreign key tabela Integrante)
+**Importante:** o arquivo `.env` utilizado localmente não deve ser
+versionado no Git. Utilize valores próprios para o ambiente local e nunca
+publique credenciais reais no repositório.
 
-## Funcionalidades Principais
+Durante o desenvolvimento, o PostgreSQL local foi executado via Docker,
+utilizando as mesmas variáveis definidas no `.env` acima (nome do banco,
+usuário, senha e porta). A visualização e consulta direta do banco foi
+feita com o DBeaver, conectando com essas mesmas credenciais.
 
-### 1) Tratamento de dados – PASSO MAIS IMPORTANTE DO DESAFIO, foque nessa etapa primeiro.
+## Como rodar localmente
 
-Esse passo é o mais importante no teste porque gostaríamos de medir a sua capacidade de lidar com estruturas de dados. 
+### Pré-requisitos
 
-Já existe um service criado no projeto (ApiService), com métodos para serem implementados, e testes unitários para eles. Utilize-os!
+- Java 11
+- Maven
+- PostgreSQL
+- Git
 
-Sendo possível, crie novos testes unitários, aumente os cases dos testes atuais, amplie essa cobertura de testes, pois é muito importante garantir que o código esteja atendendo corretamente o que se pede.
+Após configurar o banco de dados e as variáveis de ambiente, execute:
 
-No quadro, alguns detalhes sobre os métodos:
+```bash
+mvn spring-boot:run
+```
 
-| Método  | Parâmetros | Descrição |
-|--|--|--|
-| TimeDaData | Data, Lista de todos os Times                              | Vai retornar um Time, com a composição do time daquela data                                 |
-| IntegranteMaisUsado | Data inicial e Data final (podem ser null), Lista de todos os Times | Vai retornar o integrante que tiver presente na maior quantidade de times dentro do período |
-| IntegrantesDoTimeMaisRecorrente | Data inicial e Data final (podem ser null), Lista de todos os Times | Vai retornar uma lista com os nomes dos integrantes do time mais recorrente dentro do período    |
-| FuncaoMaisRecorrente | Data inicial e Data final (podem ser null), Lista de todos os Times | Vai retornar a função mais recorrente nos times dentro do período                                |
-| ClubeMaisRecorrente | Data inicial e Data final (podem ser null), Lista de todos os Times |Vai retornar o nome do Clube mais comum dentro do período                      |
-| ContagemDeClubesNoPeriodo | Data inicial e Data final (podem ser null), Lista de todos os Times | Vai retornar o número (quantidade) de aparições de cada Clube participante no período                           |
-| ContagemPorFuncao | Data inicial e Data final (podem ser null), Lista de todos os Times | Vai retornar o número (quantidade) de Funções dentro do período                             |
+A API será disponibilizada em:
 
-## Funcionalidades Extras
-### 2) API de Cadastro
+```
+http://localhost:8080
+```
 
-Lembrando: a prioridade é a funcionalidade correta, não as telas. 
+## Endpoints
 
-#### Cadastro de Integrantes
+### Cadastro
 
-Fazer um cadastro de integrantes para os times.
+**Cadastrar integrante**
+```
+POST /integrantes
+Content-Type: application/json
+```
 
-#### Cadastro de Times
-
-Fazer um cadastro de times onde não importa muito a quantidade de integrantes. 
-
-Para cadastrar um time para uma determinada semana basta escolher os personagens/integrantes que farão parte dele.
-
-
-### 3) API para processamento de Dados
-
-Seu sistema vai processar as informações do banco de dados e vai exportá-las através de endpoints.
-
-Você deve usar os selects para trazer todos os dados, mas processe eles na linguagem, através dos métodos implementados no passo 1.
-
-| Endpoint  | Parâmetros |
-|--|--|
-| TimeDaData | Data | 
-| IntegrantesDoTimeMaisRecorrente | Data inicial e Data final (podem ser null) |
-| IntegranteMaisUsado | Data inicial e Data final (podem ser null) |
-| FuncaoMaisRecorrente | Data inicial e Data final (podem ser null) |
-| ClubeMaisRecorrente | Data inicial e Data final (podem ser null) |
-| ContagemDeClubesNoPeriodo | Data inicial e Data final (podem ser null) |
-| ContagemPorFuncao | Data inicial e Data final (podem ser null) |
-
-Exemplos de Resultados esperados:
-
-TimeDaData
-``` 
+Exemplo:
+```json
 {
-  "data": 2021-01-15,
-  "clube": "Falcons",
-  "integrantes": [ "Bangalore", "BloodHound", "Crypto" ]
+  "nome": "Michael Jordan",
+  "funcao": "ala"
 }
 ```
 
-FuncaoMaisRecorrente
-``` 
+**Cadastrar time**
+
+A composição deve referenciar integrantes já cadastrados pelo `id`.
+
+```
+POST /times
+Content-Type: application/json
+```
+
+Exemplo:
+```json
 {
-  "Função" : "Meia"
+  "nomeDoClube": "Chicago Bulls",
+  "data": "1995-01-01",
+  "composicaoTime": [
+    { "integrante": { "id": 1 } },
+    { "integrante": { "id": 2 } },
+    { "integrante": { "id": 3 } }
+  ]
 }
 ```
 
-ContagemDeClubesNoPeriodo
-``` 
-{
-  "Falcons": 5,
-  "FURIA": 2,
-  "DarkZero Esports": 3
-}
+### Consultas e processamento
+
+| Endpoint | Parâmetros | Descrição |
+|---|---|---|
+| `GET /times` | `data` (obrigatório) | Retorna o primeiro time encontrado para a data informada |
+| `GET /times/mais-recorrente/integrantes` | `dataInicial`, `dataFinal` (opcionais) | Retorna os integrantes do time mais recorrente no período |
+| `GET /integrantes/mais-usado` | `dataInicial`, `dataFinal` (opcionais) | Retorna o integrante presente no maior número de times no período |
+| `GET /integrantes/funcao/mais-recorrente` | `dataInicial`, `dataFinal` (opcionais) | Retorna a função mais recorrente no período |
+| `GET /integrantes/funcao/contagem` | `dataInicial`, `dataFinal` (opcionais) | Retorna a contagem de aparições por função |
+| `GET /clubes/mais-recorrente` | `dataInicial`, `dataFinal` (opcionais) | Retorna o clube mais recorrente no período |
+| `GET /clubes/contagem` | `dataInicial`, `dataFinal` (opcionais) | Retorna a contagem de aparições por clube |
+
+As datas devem utilizar o formato ISO:
+
+```
+yyyy-MM-dd
 ```
 
+Os parâmetros `dataInicial` e `dataFinal` podem ser omitidos para considerar
+todo o histórico disponível.
 
-### 4) Telas
+Também é possível informar somente uma das datas para estabelecer apenas
+um limite do período.
 
-Conforme já foi dito as telas de cadastro tem prioridade menor do que o funcionamento da API.
+### Exemplos de requisições
 
-Você pode fazer as telas da maneira mais simples possível e usar qualquer framework que facilite o desenvolvimento.
+```
+GET /times?data=1995-01-01
+GET /integrantes/mais-usado?dataInicial=1993-01-01&dataFinal=1995-01-01
+GET /times/mais-recorrente/integrantes?dataInicial=1993-01-01&dataFinal=1995-01-01
+GET /integrantes/funcao/mais-recorrente?dataInicial=1993-01-01&dataFinal=1995-01-01
+GET /integrantes/funcao/contagem?dataInicial=1993-01-01&dataFinal=1995-01-01
+GET /clubes/mais-recorrente?dataInicial=1993-01-01&dataFinal=1995-01-01
+GET /clubes/contagem?dataInicial=1993-01-01&dataFinal=1995-01-01
+```
 
-- Tela de Inserção de Integrantes
-    - Um formulário com os campos é suficiente
-- Tela de Montagem de Times pode ser feita de diversas maneiras, algumas sugestões:
-    - Fazer uma listagem e colocar um checkbox ao lado de cada integrante
-    - Fazer um "transfer" usando dois "selects" de html
-    - Usar um componente de jquery ( https://www.jqueryscript.net/blog/best-multiple-select.html )
+Também é possível consultar sem informar o período:
 
-Não se sinta obrigado a utilizar algo dessas sugestões, fique à vontade para utilizar o que tiver mais domínio ou preferência.
+```
+GET /clubes/contagem
+```
 
-O importante é a tela estar funcional e a beleza não será avaliada.
+## Decisões de implementação
 
-## Alguns links úteis para consulta
+### Entidade Time
 
-- https://www.baeldung.com/java-collections
-- https://www.baeldung.com/java-8-streams-introduction
-- https://pt.linkedin.com/pulse/tdd-com-java-junit-e-mockito-tiago-perroni
-- https://www.devmedia.com.br/rest-tutorial/28912
-- https://www.baeldung.com/rest-with-spring-series
-- https://www.baeldung.com/jackson-vs-gson
+O endpoint `GET /times` retorna a entidade `Time` completa, incluindo sua
+estrutura de `composicaoTime` e os respectivos `integrante`.
+
+A implementação utiliza diretamente as entidades, sem a criação de DTO
+específico para esse endpoint.
+
+Quando existem múltiplos times cadastrados para a mesma data, o endpoint
+retorna o primeiro registro encontrado.
+
+### Time mais recorrente
+
+Para a consulta de integrantes do time mais recorrente, um Time é
+considerado pela combinação:
+
+```
+clube + composição
+```
+
+Dessa forma, duas escalações do mesmo clube somente são consideradas o
+mesmo time quando possuem a mesma composição.
+
+A ordem dos integrantes na composição não altera essa identificação.
+
+### Integrante mais utilizado
+
+O integrante é contabilizado pelo número de times dos quais participou no
+período, evitando contar múltiplas vezes o mesmo integrante dentro de uma
+mesma escalação.
+
+### Filtro de período
+
+O método `estaNoPeriodo` permite utilizar:
+
+- `dataInicial` e `dataFinal`;
+- somente `dataInicial`;
+- somente `dataFinal`;
+- nenhuma das duas datas.
+
+Quando uma das datas não é informada, aquele limite do intervalo é
+desconsiderado.
+
+### Empates
+
+O desafio não define um critério específico para situações de empate.
+
+A implementação mantém o primeiro resultado encontrado durante o
+processamento como critério de desempate.
+
+### Tratamento de exceções
+
+Não foi implementado um tratamento global/customizado de exceções.
+
+Situações como:
+
+- consulta de um time inexistente;
+- cadastro de um time referenciando um integrante inexistente;
+
+utilizam atualmente o tratamento padrão do Spring.
+
+Um tratamento global com respostas HTTP mais específicas e padronizadas pode
+ser implementado futuramente.
+
+## Testes
+
+Foram implementados testes unitários para os métodos de processamento do
+`ApiService`.
+
+Os testes cobrem:
+
+- busca de time por data;
+- integrante mais utilizado;
+- integrantes do time mais recorrente;
+- função mais recorrente;
+- clube mais recorrente;
+- contagem de clubes;
+- contagem por função.
+
+Para executar os testes:
+
+```bash
+mvn test
+```
+
+## Tecnologias
+
+### Backend
+- Java 11
+- Spring Boot
+- Spring Web
+- Spring Data JPA
+- Hibernate
+- PostgreSQL
+- Maven
+- JUnit
+
+### Frontend
+- React
+- Lovable
+- Vercel
+
+### Infraestrutura
+- Render
+- PostgreSQL
+- Variáveis de ambiente
+- API REST
+
+## Estrutura geral
+
+```
+src/
+├── main/
+│   └── java/
+│       └── br/com/duxusdesafio/
+│           ├── controller/
+│           ├── entity/
+│           ├── repository/
+│           ├── service/
+│           └── exception/
+│
+└── test/
+    └── java/
+        └── br/com/duxusdesafio/
+```
+
+O processamento das regras de negócio é centralizado no `ApiService`,
+enquanto os controllers são responsáveis pela exposição dos endpoints REST.
+
+## Observações
+
+O projeto prioriza a implementação das regras de processamento solicitadas
+no desafio, mantendo a lógica de negócio centralizada no `ApiService`.
+
+A implementação atual utiliza as entidades JPA diretamente nos endpoints,
+sem DTOs, como uma decisão de simplificação para a primeira versão.
+
+Algumas melhorias de arquitetura e tratamento de erros estão documentadas
+na seção de melhorias futuras.
+
+## Melhorias futuras
+
+As ideias abaixo não foram implementadas neste desafio — ficam registradas
+como próximos passos.
+
+### DTOs de request e response
+
+Hoje os controllers trafegam as entidades JPA diretamente. Isso funciona,
+mas acopla o contrato da API ao modelo de persistência (qualquer mudança de
+coluna afeta o JSON exposto) e faz com que o GET /times não utilize o formato de resposta sugerido no enunciado. Uma próxima etapa seria:
+
+- `IntegranteRequestDTO` / `IntegranteResponseDTO` — separa o que é
+  aceito no cadastro do que é exposto nas consultas.
+- `TimeRequestDTO` (recebe `nomeDoClube`, `data` e uma lista de
+  `integranteId`, sem expor a estrutura de `ComposicaoTime`) e
+  `TimeResponseDTO` (`data`, `clube`, `integrantes: [nomes]`), alinhando o
+  `GET /times` ao formato do enunciado.
+- Uma camada de *mapper* (manual ou com MapStruct) entre entidade e DTO,
+  para não misturar essa conversão dentro do `ApiService`.
+
+### Tratamento global de exceções
+
+Um `@ControllerAdvice` com `@ExceptionHandler` para `NotFoundException` e
+outras exceções de negócio, padronizando os códigos HTTP retornados (ex:
+404 para time/integrante não encontrado) em vez do comportamento padrão do
+Spring.
+
+### Documentação Swagger/OpenAPI
+
+Expor os endpoints via springdoc-openapi, facilitando a exploração e o
+teste da API sem depender apenas deste README.
+
+### Melhorias de testes
+
+Ampliar a cobertura de testes unitários e de integração, incluindo casos de
+borda como empates, múltiplos times na mesma data e períodos parciais
+(somente `dataInicial` ou somente `dataFinal`).
+
+### Validações
+
+Validação de entrada nos endpoints de cadastro (ex: `@Valid` com
+`@NotBlank`/`@NotNull` em `Integrante` e `Time`), evitando cadastros com
+dados incompletos ou inconsistentes.
