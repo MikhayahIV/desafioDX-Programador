@@ -87,28 +87,29 @@ public class ApiService {
     public List<String> integrantesDoTimeMaisRecorrente(LocalDate dataInicial, LocalDate dataFinal, List<Time> todosOsTimes){
         // TODO Implementar método seguindo as instruções!
 
-        Map<String, Integer> contagemClubes = new HashMap<>();
+        Map<String, Integer> contagemClubes = new LinkedHashMap<>();
         for(Time time: todosOsTimes){
             if(!estaNoPeriodo(time,dataInicial,dataFinal)) {
                 continue;
             }
             String chaveTime = gerarChaveDoTime(time);
-
             contagemClubes.merge(chaveTime, 1, Integer::sum);
         }
 
-        String chaveTimeMaisRecorrente = contagemClubes.entrySet()
-                .stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(null);
+        String chaveTimeMaisRecorrente = null;
+        int maiorContagem = 0;
 
-        if (chaveTimeMaisRecorrente == null) {
-            return Collections.emptyList();
+        for(Map.Entry<String, Integer> entry:contagemClubes.entrySet()){
+            if(entry.getValue() > maiorContagem){
+                maiorContagem = entry.getValue();
+                chaveTimeMaisRecorrente = entry.getKey();
+            }
         }
 
+        if(chaveTimeMaisRecorrente == null){
+            return Collections.emptyList();
+        }
         for (Time time : todosOsTimes) {
-
             if (!estaNoPeriodo(time, dataInicial, dataFinal)) {
                 continue;
             }
@@ -161,7 +162,7 @@ public class ApiService {
     public String clubeMaisRecorrente(LocalDate dataInicial, LocalDate dataFinal, List<Time> todosOsTimes) {
         // TODO Implementar método seguindo as instruções!
 
-        Map<String, Integer> contagemClubes = new HashMap<>();
+        Map<String, Integer> contagemClubes = new LinkedHashMap<>();
         for(Time time: todosOsTimes){
             if(!estaNoPeriodo(time,dataInicial,dataFinal)){
                 continue;
@@ -169,11 +170,17 @@ public class ApiService {
             String clube = time.getNomeDoClube();
             contagemClubes.merge(clube,1,Integer::sum);
         }
-        return contagemClubes.entrySet()
-                .stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(null);
+
+        String clubeMaisRecorrente = null;
+        int maiorContagem = 0;
+
+        for(Map.Entry<String, Integer> entry: contagemClubes.entrySet()){
+            if(entry.getValue()> maiorContagem){
+                maiorContagem = entry.getValue();
+                clubeMaisRecorrente = entry.getKey();
+            }
+        }
+        return clubeMaisRecorrente;
     }
 
 
