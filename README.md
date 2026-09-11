@@ -368,7 +368,7 @@ na seção de melhorias futuras.
 
 ## Melhorias futuras
 
-As ideias abaixo não foram implementadas neste desafio — ficam registradas
+As ideias abaixo não foram implementadas neste desafio, ficam registradas
 como próximos passos.
 
 ### DTOs de request e response
