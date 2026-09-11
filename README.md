@@ -1,4 +1,4 @@
-# Desafio Duxus — Sistema de Escalação de Times
+# Desafio Duxus  Sistema de Escalação de Times
 
 API REST para cadastro de integrantes e times, além do processamento de
 estatísticas relacionadas às escalações.
@@ -377,7 +377,7 @@ Hoje os controllers trafegam as entidades JPA diretamente. Isso funciona,
 mas acopla o contrato da API ao modelo de persistência (qualquer mudança de
 coluna afeta o JSON exposto) e faz com que o GET /times não utilize o formato de resposta sugerido no enunciado. Uma próxima etapa seria:
 
-- `IntegranteRequestDTO` / `IntegranteResponseDTO` — separa o que é
+- `IntegranteRequestDTO` / `IntegranteResponseDTO` separa o que é
   aceito no cadastro do que é exposto nas consultas.
 - `TimeRequestDTO` (recebe `nomeDoClube`, `data` e uma lista de
   `integranteId`, sem expor a estrutura de `ComposicaoTime`) e
